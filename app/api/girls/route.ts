@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { girlsDatabase } from '@/lib/database/girls';
+import { cookies } from 'next/headers';
 
 export async function GET() {
   try {
-    const girls = await girlsDatabase.getAll();
+    const cookieStore = await cookies();
+    const sessionToken = cookieStore.get('cpn_session_token')?.value;
+    const girls = await girlsDatabase.getAll(sessionToken);
     return NextResponse.json(girls);
   } catch (error) {
     console.error('Error in GET /api/girls:', error);

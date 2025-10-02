@@ -156,7 +156,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadData = async () => {
       try {
-        await getOrCreateSession();
+        // Ensure we're in the browser before initializing session
+        if (typeof window === 'undefined') {
+          dispatch({ type: 'SET_LOADING', payload: false });
+          return;
+        }
+
+        // Initialize session first
+        try {
+          await getOrCreateSession();
+        } catch (sessionError) {
+          console.error('Session initialization error:', sessionError);
+          // Continue even if session creation fails - API will handle it
+        }
 
         const [girlsResponse, entriesResponse] = await Promise.all([
           fetch('/api/girls'),

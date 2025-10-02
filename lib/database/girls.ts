@@ -4,15 +4,15 @@ import { DbGirl, dbGirlToGirl, girlToDbGirl } from './types';
 import { getSessionToken } from './session';
 
 export const girlsDatabase = {
-  getAll: async (): Promise<Girl[]> => {
-    const sessionToken = getSessionToken();
-    if (!sessionToken) return [];
+  getAll: async (sessionToken?: string): Promise<Girl[]> => {
+    const token = sessionToken || getSessionToken();
+    if (!token) return [];
 
     const supabase = getSupabaseClient();
     const { data: user } = await supabase
       .from('users')
       .select('id')
-      .eq('session_token', sessionToken)
+      .eq('session_token', token)
       .maybeSingle();
 
     if (!user) return [];

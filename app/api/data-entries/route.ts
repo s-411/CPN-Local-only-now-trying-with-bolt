@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { dataEntriesDatabase } from '@/lib/database/dataEntries';
+import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
   try {
+    const cookieStore = await cookies();
+    const sessionToken = cookieStore.get('cpn_session_token')?.value;
     const { searchParams } = new URL(request.url);
     const girlId = searchParams.get('girlId');
 
@@ -11,7 +14,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(entries);
     }
 
-    const entries = await dataEntriesDatabase.getAll();
+    const entries = await dataEntriesDatabase.getAll(sessionToken);
     return NextResponse.json(entries);
   } catch (error) {
     console.error('Error in GET /api/data-entries:', error);
