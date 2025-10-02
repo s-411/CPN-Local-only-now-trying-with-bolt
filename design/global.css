@@ -1,0 +1,186 @@
+# CPN Design System
+
+This document outlines the CPN brand design system implementation for consistent UI/UX across the application.
+
+## Brand Colors
+
+### Primary Colors
+- **CPN Yellow**: `#f2f661` - Use for primary buttons, accents, and highlights
+- **CPN Dark**: `#1f1f1f` - Primary background color, creates premium dark theme
+- **CPN Dark2**: `#2a2a2a` - Slightly lighter dark for elevated surfaces and cards
+- **CPN White**: `#ffffff` - Primary text color for maximum readability
+- **CPN Gray**: `#ABABAB` - Secondary text, borders, and subtle UI elements
+
+### Tailwind CSS Classes
+```css
+/* Background Colors */
+.bg-cpn-yellow    /* #f2f661 */
+.bg-cpn-dark      /* #1f1f1f */
+.bg-cpn-dark2     /* #2a2a2a */
+.bg-cpn-white     /* #ffffff */
+.bg-cpn-gray      /* #ABABAB */
+
+/* Text Colors */
+.text-cpn-yellow
+.text-cpn-dark
+.text-cpn-dark2
+.text-cpn-white
+.text-cpn-gray
+
+/* Border Colors */
+.border-cpn-yellow
+.border-cpn-dark
+.border-cpn-dark2
+.border-cpn-white
+.border-cpn-gray
+```
+
+## Typography
+
+### Fonts
+- **Headings**: National 2 Condensed Bold (fallback: Arial Black, sans-serif)
+- **Body Text**: ES Klarheit Grotesk (fallback: Inter, system-ui, sans-serif)
+
+### CSS Classes
+```css
+/* Font Families */
+.font-heading     /* National 2 Condensed Bold */
+.font-body        /* ES Klarheit Grotesk */
+
+/* All headings (h1-h6) automatically use font-heading */
+/* Body text automatically uses font-body */
+```
+
+### Typography Hierarchy
+```jsx
+<h1 className="text-4xl font-bold">Page Title</h1>
+<h2 className="text-3xl font-bold text-cpn-yellow">Section Header</h2>
+<h3 className="text-2xl font-bold">Subsection</h3>
+<p className="text-cpn-white">Primary body text</p>
+<p className="text-cpn-gray">Secondary body text</p>
+```
+
+## Buttons
+
+### Primary Button (CPN Style)
+```jsx
+<button className="btn-cpn">
+  Primary Action
+</button>
+```
+
+### Button Variations
+```jsx
+/* Secondary Button */
+<button className="bg-cpn-dark border border-cpn-yellow text-cpn-yellow py-3 px-6 rounded-cpn hover:bg-cpn-yellow hover:text-cpn-dark transition-all duration-200">
+  Secondary Button
+</button>
+
+/* Outline Button */
+<button className="bg-transparent border border-cpn-gray text-cpn-gray py-3 px-6 rounded-cpn hover:border-cpn-white hover:text-cpn-white transition-all duration-200">
+  Outline Button
+</button>
+```
+
+### Border Radius
+- **CPN Buttons**: `rounded-cpn` (100px border radius for pill-shaped buttons)
+- **Standard Elements**: `rounded-lg` (8px default)
+
+## Form Elements
+
+### Input Styling
+```jsx
+<input
+  type="text"
+  placeholder="Enter text..."
+  className="w-full p-3 rounded-lg border border-cpn-gray bg-cpn-dark text-cpn-white placeholder-cpn-gray focus:ring-2 focus:ring-cpn-yellow focus:border-cpn-yellow outline-none"
+/>
+```
+
+### Textarea Styling
+```jsx
+<textarea
+  placeholder="Enter message..."
+  className="w-full p-3 rounded-lg border border-cpn-gray bg-cpn-dark text-cpn-white placeholder-cpn-gray focus:ring-2 focus:ring-cpn-yellow focus:border-cpn-yellow outline-none resize-none"
+/>
+```
+
+## Animations
+
+### Available Animations
+```css
+.animate-fade-in    /* Smooth fade in effect */
+.animate-slide-up   /* Slide up with fade effect */
+```
+
+### Usage
+```jsx
+<div className="animate-fade-in">
+  Content that fades in
+</div>
+
+<div className="animate-slide-up">
+  Content that slides up
+</div>
+```
+
+## Layout & Theme
+
+### Dark Theme (Default)
+The CPN app uses a dark theme by default with the following characteristics:
+- Background: CPN Dark (`#1f1f1f`)
+- Primary text: CPN White (`#ffffff`)
+- Secondary text: CPN Gray (`#ABABAB`)
+- Accent color: CPN Yellow (`#f2f661`)
+
+### Body Styling
+```jsx
+// The root layout automatically applies:
+<body className="min-h-[100dvh] bg-cpn-dark text-cpn-white font-body antialiased">
+```
+
+## Semantic Color Classes
+
+### Utility Classes
+```css
+.text-primary       /* CPN White - main text */
+.text-secondary     /* CPN Gray - secondary text */
+.text-accent        /* CPN Yellow - accent text */
+.bg-primary         /* CPN Dark - main background */
+.bg-accent          /* CPN Yellow - accent background */
+```
+
+## Implementation Notes
+
+### Font Loading
+- Fonts are loaded via `@font-face` declarations in `globals.css`
+- Font files are served from `/public/fonts/`
+- `font-display: swap` ensures fast loading with fallbacks
+
+### Tailwind Configuration
+- Custom colors are defined in `tailwind.config.ts`
+- CSS custom properties enable dynamic theming
+- All brand colors are available as Tailwind utilities
+
+### Compatibility
+- Design system is built on Tailwind CSS 4
+- Compatible with shadcn/ui components
+- Supports all modern browsers with CSS custom property support
+
+## Best Practices
+
+1. **Always use brand colors** instead of arbitrary hex values
+2. **Use semantic classes** (text-primary, bg-accent) when possible
+3. **Maintain consistent spacing** using Tailwind's spacing scale
+4. **Test on mobile devices** to ensure touch-friendly interfaces
+5. **Use animations sparingly** for enhanced UX without overwhelming users
+
+## Development Commands
+
+```bash
+# Start development server
+npm run dev
+
+# Visit design system test page
+http://localhost:3000/design-test
+```

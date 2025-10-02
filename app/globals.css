@@ -1,0 +1,264 @@
+@import "tailwindcss";
+
+/* Font Face Declarations */
+@font-face {
+  font-family: 'National2Condensed';
+  src: url('/fonts/National-2-Condensed-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'ESKlarheit';
+  src: url('/fonts/ESKlarheitGrotesk-Rg.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Tailwind CSS 4.0 Theme Configuration */
+@theme {
+  --color-cpn-yellow: #f2f661;
+  --color-cpn-dark: #1f1f1f;
+  --color-cpn-dark2: #2a2a2a;
+  --color-cpn-white: #ffffff;
+  --color-cpn-gray: #ababab;
+  
+  --font-family-heading: 'National2Condensed', 'Arial Black', sans-serif;
+  --font-family-body: 'ESKlarheit', 'Inter', system-ui, sans-serif;
+  
+  --radius-cpn: 100px;
+}
+
+/* Global Styles */
+body {
+  background-color: var(--color-cpn-dark);
+  color: var(--color-cpn-white);
+  font-family: var(--font-family-body);
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family-heading);
+  font-weight: bold;
+}
+
+/* Custom Utility Classes */
+@layer utilities {
+  .text-cpn-yellow {
+    color: var(--color-cpn-yellow);
+  }
+  .text-cpn-dark {
+    color: var(--color-cpn-dark);
+  }
+  .text-cpn-white {
+    color: var(--color-cpn-white);
+  }
+  .text-cpn-gray {
+    color: var(--color-cpn-gray);
+  }
+  .text-cpn-dark2 {
+    color: var(--color-cpn-dark2);
+  }
+  
+  .bg-cpn-yellow {
+    background-color: var(--color-cpn-yellow);
+  }
+  .bg-cpn-dark {
+    background-color: var(--color-cpn-dark);
+  }
+  .bg-cpn-white {
+    background-color: var(--color-cpn-white);
+  }
+  .bg-cpn-gray {
+    background-color: var(--color-cpn-gray);
+  }
+  .bg-cpn-dark2 {
+    background-color: var(--color-cpn-dark2);
+  }
+  
+  .border-cpn-yellow {
+    border-color: var(--color-cpn-yellow);
+  }
+  .border-cpn-dark {
+    border-color: var(--color-cpn-dark);
+  }
+  .border-cpn-white {
+    border-color: var(--color-cpn-white);
+  }
+  .border-cpn-gray {
+    border-color: var(--color-cpn-gray);
+  }
+  .border-cpn-dark2 {
+    border-color: var(--color-cpn-dark2);
+  }
+  
+  .font-heading {
+    font-family: var(--font-family-heading);
+  }
+  
+  .font-body {
+    font-family: var(--font-family-body);
+  }
+  
+  .rounded-cpn {
+    border-radius: var(--radius-cpn);
+  }
+  
+  .btn-cpn {
+    background-color: var(--color-cpn-yellow);
+    color: var(--color-cpn-dark);
+    font-weight: bold;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-cpn);
+    transition: opacity 0.2s;
+    cursor: pointer;
+  }
+  
+  .btn-cpn:hover {
+    opacity: 0.9;
+  }
+}
+
+/* Animation Keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Component Specific Styles */
+.glass-card {
+  @apply bg-cpn-dark/80 backdrop-blur-sm border border-cpn-gray/20 rounded-lg;
+}
+
+.input-cpn {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--color-cpn-gray) 30%, transparent);
+  background-color: color-mix(in srgb, var(--color-cpn-dark) 50%, transparent);
+  color: var(--color-cpn-white);
+  outline: none;
+  transition: all 0.2s;
+}
+
+.input-cpn::placeholder {
+  color: var(--color-cpn-gray);
+}
+
+.input-cpn:focus {
+  border-color: var(--color-cpn-yellow);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-cpn-yellow) 20%, transparent);
+}
+
+.card-cpn {
+  background-color: var(--color-cpn-dark);
+  border: 1px solid color-mix(in srgb, var(--color-cpn-gray) 20%, transparent);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+}
+
+.card-cpn-form {
+  background-color: var(--color-cpn-dark2);
+  border: 1px solid color-mix(in srgb, var(--color-cpn-gray) 25%, transparent);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+}
+
+.glass-card {
+  background-color: color-mix(in srgb, var(--color-cpn-dark) 80%, transparent);
+  backdrop-filter: blur(4px);
+  border: 1px solid color-mix(in srgb, var(--color-cpn-gray) 20%, transparent);
+  border-radius: 0.5rem;
+}
+
+/* Mobile Navigation Styles */
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  color: var(--color-cpn-gray);
+  transition: color 0.2s;
+  cursor: pointer;
+}
+
+.mobile-nav-item.active {
+  color: var(--color-cpn-yellow);
+}
+
+.mobile-nav-item:hover {
+  color: var(--color-cpn-white);
+}
+
+/* Sidebar Navigation Styles */
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  color: var(--color-cpn-gray);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.sidebar-item:hover {
+  color: var(--color-cpn-white);
+  background-color: color-mix(in srgb, var(--color-cpn-dark) 50%, transparent);
+}
+
+.sidebar-item.active {
+  background-color: var(--color-cpn-yellow);
+  color: var(--color-cpn-dark);
+  font-weight: 500;
+}
+
+/* Table Styles */
+.table-cpn {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-cpn th {
+  text-align: left;
+  padding: 1rem;
+  color: var(--color-cpn-gray);
+  font-weight: 500;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-cpn-gray) 20%, transparent);
+}
+
+.table-cpn td {
+  padding: 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-cpn-gray) 10%, transparent);
+  color: var(--color-cpn-white);
+}
+
+.table-cpn tbody tr:hover {
+  background-color: color-mix(in srgb, var(--color-cpn-dark) 50%, transparent);
+}
