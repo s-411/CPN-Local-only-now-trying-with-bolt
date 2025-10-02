@@ -1,4 +1,4 @@
-import { supabase } from '../supabase';
+import { getSupabaseClient } from '../supabase';
 import { DataEntry } from '../types';
 import { DbDataEntry, dbDataEntryToDataEntry, dataEntryToDbDataEntry } from './types';
 import { getSessionToken } from './session';
@@ -8,6 +8,7 @@ export const dataEntriesDatabase = {
     const sessionToken = getSessionToken();
     if (!sessionToken) return [];
 
+    const supabase = getSupabaseClient();
     const { data: user } = await supabase
       .from('users')
       .select('id')
@@ -31,6 +32,7 @@ export const dataEntriesDatabase = {
   },
 
   getById: async (id: string): Promise<DataEntry | null> => {
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('data_entries')
       .select('*')
@@ -42,6 +44,7 @@ export const dataEntriesDatabase = {
   },
 
   getByGirlId: async (girlId: string): Promise<DataEntry[]> => {
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('data_entries')
       .select('*')
@@ -60,6 +63,7 @@ export const dataEntriesDatabase = {
     const sessionToken = getSessionToken();
     if (!sessionToken) throw new Error('No session token found');
 
+    const supabase = getSupabaseClient();
     const { data: user } = await supabase
       .from('users')
       .select('id')
@@ -93,6 +97,7 @@ export const dataEntriesDatabase = {
     if (updates.numberOfNuts !== undefined) updateData.number_of_nuts = updates.numberOfNuts;
     if (updates.girlId !== undefined) updateData.girl_id = updates.girlId;
 
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('data_entries')
       .update(updateData)
@@ -109,6 +114,7 @@ export const dataEntriesDatabase = {
   },
 
   delete: async (id: string): Promise<boolean> => {
+    const supabase = getSupabaseClient();
     const { error } = await supabase
       .from('data_entries')
       .delete()
@@ -123,6 +129,7 @@ export const dataEntriesDatabase = {
   },
 
   deleteByGirlId: async (girlId: string): Promise<number> => {
+    const supabase = getSupabaseClient();
     const { data: entries } = await supabase
       .from('data_entries')
       .select('id')

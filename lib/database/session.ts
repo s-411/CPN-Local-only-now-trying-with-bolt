@@ -1,4 +1,6 @@
-import { supabase } from '../supabase';
+'use client';
+
+import { getSupabaseClient } from '../supabase';
 import { DbUser } from './types';
 
 const SESSION_STORAGE_KEY = 'cpn_session_token';
@@ -12,6 +14,7 @@ export async function getOrCreateSession(): Promise<{ userId: string; sessionTok
 
   if (!sessionToken) {
     sessionToken = crypto.randomUUID();
+    const supabase = getSupabaseClient();
     const { data: newUser, error } = await supabase
       .from('users')
       .insert({
@@ -31,6 +34,7 @@ export async function getOrCreateSession(): Promise<{ userId: string; sessionTok
     return { userId: newUser.id, sessionToken };
   }
 
+  const supabase = getSupabaseClient();
   const { data: existingUser, error } = await supabase
     .from('users')
     .select()

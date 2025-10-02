@@ -1,4 +1,4 @@
-import { supabase } from '../supabase';
+import { getSupabaseClient } from '../supabase';
 import { Girl } from '../types';
 import { DbGirl, dbGirlToGirl, girlToDbGirl } from './types';
 import { getSessionToken } from './session';
@@ -8,6 +8,7 @@ export const girlsDatabase = {
     const sessionToken = getSessionToken();
     if (!sessionToken) return [];
 
+    const supabase = getSupabaseClient();
     const { data: user } = await supabase
       .from('users')
       .select('id')
@@ -31,6 +32,7 @@ export const girlsDatabase = {
   },
 
   getById: async (id: string): Promise<Girl | null> => {
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('girls')
       .select('*')
@@ -45,6 +47,7 @@ export const girlsDatabase = {
     const sessionToken = getSessionToken();
     if (!sessionToken) throw new Error('No session token found');
 
+    const supabase = getSupabaseClient();
     const { data: user } = await supabase
       .from('users')
       .select('id')
@@ -84,6 +87,7 @@ export const girlsDatabase = {
       updateData.location_country = updates.location?.country || null;
     }
 
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('girls')
       .update(updateData)
@@ -100,6 +104,7 @@ export const girlsDatabase = {
   },
 
   delete: async (id: string): Promise<boolean> => {
+    const supabase = getSupabaseClient();
     const { error } = await supabase
       .from('girls')
       .delete()
