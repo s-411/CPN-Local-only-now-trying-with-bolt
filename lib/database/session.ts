@@ -21,11 +21,15 @@ export async function getOrCreateSession(): Promise<{ userId: string; sessionTok
         subscription_tier: 'free',
       })
       .select()
-      .single<DbUser>();
+      .maybeSingle<DbUser>();
 
     if (error) {
       console.error('Error creating session:', error);
       throw error;
+    }
+
+    if (!newUser) {
+      throw new Error('Failed to create user session');
     }
 
     localStorage.setItem(SESSION_STORAGE_KEY, sessionToken);
@@ -37,7 +41,7 @@ export async function getOrCreateSession(): Promise<{ userId: string; sessionTok
     .from('users')
     .select()
     .eq('session_token', sessionToken)
-    .single<DbUser>();
+    .maybeSingle<DbUser>();
 
   if (error || !existingUser) {
     localStorage.removeItem(SESSION_STORAGE_KEY);

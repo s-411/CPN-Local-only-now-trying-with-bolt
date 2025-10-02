@@ -13,7 +13,7 @@ export const girlsDatabase = {
       .from('users')
       .select('id')
       .eq('session_token', sessionToken)
-      .single();
+      .maybeSingle();
 
     if (!user) return [];
 
@@ -37,7 +37,7 @@ export const girlsDatabase = {
       .from('girls')
       .select('*')
       .eq('id', id)
-      .single<DbGirl>();
+      .maybeSingle<DbGirl>();
 
     if (error || !data) return null;
     return dbGirlToGirl(data);
@@ -52,7 +52,7 @@ export const girlsDatabase = {
       .from('users')
       .select('id')
       .eq('session_token', sessionToken)
-      .single();
+      .maybeSingle();
 
     if (!user) throw new Error('User not found');
 
@@ -62,11 +62,15 @@ export const girlsDatabase = {
       .from('girls')
       .insert(dbGirlData)
       .select()
-      .single<DbGirl>();
+      .maybeSingle<DbGirl>();
 
     if (error) {
       console.error('Error creating girl:', error);
       throw error;
+    }
+
+    if (!data) {
+      throw new Error('Failed to create girl');
     }
 
     return dbGirlToGirl(data);
@@ -93,7 +97,7 @@ export const girlsDatabase = {
       .update(updateData)
       .eq('id', id)
       .select()
-      .single<DbGirl>();
+      .maybeSingle<DbGirl>();
 
     if (error || !data) {
       console.error('Error updating girl:', error);

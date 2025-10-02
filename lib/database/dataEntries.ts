@@ -13,7 +13,7 @@ export const dataEntriesDatabase = {
       .from('users')
       .select('id')
       .eq('session_token', sessionToken)
-      .single();
+      .maybeSingle();
 
     if (!user) return [];
 
@@ -37,7 +37,7 @@ export const dataEntriesDatabase = {
       .from('data_entries')
       .select('*')
       .eq('id', id)
-      .single<DbDataEntry>();
+      .maybeSingle<DbDataEntry>();
 
     if (error || !data) return null;
     return dbDataEntryToDataEntry(data);
@@ -68,7 +68,7 @@ export const dataEntriesDatabase = {
       .from('users')
       .select('id')
       .eq('session_token', sessionToken)
-      .single();
+      .maybeSingle();
 
     if (!user) throw new Error('User not found');
 
@@ -78,11 +78,15 @@ export const dataEntriesDatabase = {
       .from('data_entries')
       .insert(dbEntryData)
       .select()
-      .single<DbDataEntry>();
+      .maybeSingle<DbDataEntry>();
 
     if (error) {
       console.error('Error creating data entry:', error);
       throw error;
+    }
+
+    if (!data) {
+      throw new Error('Failed to create data entry');
     }
 
     return dbDataEntryToDataEntry(data);
@@ -103,7 +107,7 @@ export const dataEntriesDatabase = {
       .update(updateData)
       .eq('id', id)
       .select()
-      .single<DbDataEntry>();
+      .maybeSingle<DbDataEntry>();
 
     if (error || !data) {
       console.error('Error updating data entry:', error);
