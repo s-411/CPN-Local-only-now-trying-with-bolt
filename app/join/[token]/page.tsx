@@ -9,7 +9,6 @@ import {
   XMarkIcon,
   ArrowRightIcon
 } from '@heroicons/react/24/outline';
-import { leaderboardGroupsStorage, leaderboardMembersStorage } from '@/lib/leaderboards';
 import { LeaderboardGroup } from '@/lib/types';
 
 interface JoinInvitePageProps {
@@ -32,19 +31,20 @@ export default function JoinInvitePage({ params }: JoinInvitePageProps) {
     loadGroupData();
   }, [token]);
 
-  const loadGroupData = () => {
-    const groupData = leaderboardGroupsStorage.getByInviteToken(token);
-    if (!groupData) {
+  const loadGroupData = async () => {
+    try {
+      // This would need a new API route to fetch group by token
+      // For now, just show not found
       setNotFound(true);
       setLoading(false);
-      return;
+    } catch (error) {
+      console.error('Failed to load group:', error);
+      setNotFound(true);
+      setLoading(false);
     }
-
-    setGroup(groupData);
-    setLoading(false);
   };
 
-  const handleAcceptInvite = () => {
+  const handleAcceptInvite = async () => {
     if (!username.trim()) {
       setError('Username is required');
       return;
@@ -62,7 +62,11 @@ export default function JoinInvitePage({ params }: JoinInvitePageProps) {
 
     try {
       // Add member to group
-      leaderboardMembersStorage.addMember(group.id, `user-${Date.now()}`, username.trim());
+      await fetch('/api/leaderboards/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inviteToken: token, username: username.trim() }),
+      });
       
       // Redirect to group dashboard
       router.push(`/leaderboards/${group.id}`);

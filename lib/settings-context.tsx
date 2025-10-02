@@ -50,11 +50,11 @@ interface SettingsContextType {
   dateTimeSettings: DateTimeSettings;
   privacySettings: PrivacySettings;
   notificationSettings: NotificationSettings;
-  updateProfile: (updates: Partial<UserProfile>) => void;
-  updateTheme: (updates: Partial<ThemeSettings>) => void;
-  updateDateTime: (updates: Partial<DateTimeSettings>) => void;
-  updatePrivacy: (updates: Partial<PrivacySettings>) => void;
-  updateNotifications: (updates: Partial<NotificationSettings>) => void;
+  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
+  updateTheme: (updates: Partial<ThemeSettings>) => Promise<void>;
+  updateDateTime: (updates: Partial<DateTimeSettings>) => Promise<void>;
+  updatePrivacy: (updates: Partial<PrivacySettings>) => Promise<void>;
+  updateNotifications: (updates: Partial<NotificationSettings>) => Promise<void>;
   isLoaded: boolean;
 }
 
@@ -99,15 +99,6 @@ const defaultNotificationSettings: NotificationSettings = {
   emailNotifications: false
 };
 
-// Storage Keys
-const STORAGE_KEYS = {
-  userProfile: 'cpn_user_profile',
-  themeSettings: 'cpn_theme_settings',
-  dateTimeSettings: 'cpn_datetime_settings',
-  privacySettings: 'cpn_privacy_settings',
-  notificationSettings: 'cpn_notification_settings'
-};
-
 // Create Context
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
@@ -120,96 +111,152 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>(defaultNotificationSettings);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load settings from localStorage on mount
   useEffect(() => {
-    const loadSettings = () => {
+    if (typeof window === 'undefined') return;
+
+    const loadSettings = async () => {
       try {
-        // Load user profile
-        const savedProfile = localStorage.getItem(STORAGE_KEYS.userProfile);
-        if (savedProfile) {
-          const parsed = JSON.parse(savedProfile);
-          setUserProfile({
-            ...parsed,
-            accountCreated: new Date(parsed.accountCreated),
-            lastLogin: new Date(parsed.lastLogin)
-          });
+        const response = await fetch('/api/settings');
+
+        if (!response.ok) {
+          console.warn('Failed to load settings from database, using defaults');
+          setIsLoaded(true);
+          return;
         }
 
-        // Load theme settings
-        const savedTheme = localStorage.getItem(STORAGE_KEYS.themeSettings);
-        if (savedTheme) {
-          setThemeSettings(JSON.parse(savedTheme));
-        }
+        const dbSettings = await response.json();
 
-        // Load date/time settings
-        const savedDateTime = localStorage.getItem(STORAGE_KEYS.dateTimeSettings);
-        if (savedDateTime) {
-          setDateTimeSettings(JSON.parse(savedDateTime));
-        }
+        setUserProfile({
+          displayName: dbSettings.display_name,
+          avatarUrl: dbSettings.avatar_url || '👤',
+          accountCreated: new Date(dbSettings.created_at),
+          lastLogin: new Date()
+        });
 
-        // Load privacy settings
-        const savedPrivacy = localStorage.getItem(STORAGE_KEYS.privacySettings);
-        if (savedPrivacy) {
-          setPrivacySettings(JSON.parse(savedPrivacy));
-        }
+        setThemeSettings({
+          theme: dbSettings.theme,
+          accentColor: dbSettings.accent_color,
+          compactMode: dbSettings.compact_mode,
+          animationsEnabled: dbSettings.animations_enabled
+        });
 
-        // Load notification settings
-        const savedNotifications = localStorage.getItem(STORAGE_KEYS.notificationSettings);
-        if (savedNotifications) {
-          setNotificationSettings(JSON.parse(savedNotifications));
-        }
+        setDateTimeSettings({
+          dateFormat: dbSettings.date_format,
+          timeFormat: dbSettings.time_format,
+          weekStart: dbSettings.week_start
+        });
+
+        setPrivacySettings(dbSettings.privacy_settings);
+        setNotificationSettings(dbSettings.notification_settings);
 
         setIsLoaded(true);
       } catch (error) {
-        console.error('Error loading settings from localStorage:', error);
+        console.error('Error loading settings from database:', error);
         setIsLoaded(true);
       }
     };
 
-    // Only load on client side
-    if (typeof window !== 'undefined') {
-      loadSettings();
-    }
+    loadSettings();
   }, []);
 
-  // Update functions with localStorage persistence
-  const updateProfile = (updates: Partial<UserProfile>) => {
+  const updateProfile = async (updates: Partial<UserProfile>) => {
     const newProfile = { ...userProfile, ...updates };
     setUserProfile(newProfile);
+
     if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEYS.userProfile, JSON.stringify(newProfile));
+      try {
+        await fetch('/api/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            display_name: newProfile.displayName,
+            avatar_url: newProfile.avatarUrl
+          }),
+        });
+      } catch (error) {
+        console.error('Error updating profile:', error);
+      }
     }
   };
 
-  const updateTheme = (updates: Partial<ThemeSettings>) => {
+  const updateTheme = async (updates: Partial<ThemeSettings>) => {
     const newTheme = { ...themeSettings, ...updates };
     setThemeSettings(newTheme);
+
     if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEYS.themeSettings, JSON.stringify(newTheme));
+      try {
+        await fetch('/api/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            theme: newTheme.theme,
+            accent_color: newTheme.accentColor,
+            compact_mode: newTheme.compactMode,
+            animations_enabled: newTheme.animationsEnabled
+          }),
+        });
+      } catch (error) {
+        console.error('Error updating theme:', error);
+      }
     }
   };
 
-  const updateDateTime = (updates: Partial<DateTimeSettings>) => {
+  const updateDateTime = async (updates: Partial<DateTimeSettings>) => {
     const newDateTime = { ...dateTimeSettings, ...updates };
     setDateTimeSettings(newDateTime);
+
     if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEYS.dateTimeSettings, JSON.stringify(newDateTime));
+      try {
+        await fetch('/api/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            date_format: newDateTime.dateFormat,
+            time_format: newDateTime.timeFormat,
+            week_start: newDateTime.weekStart
+          }),
+        });
+      } catch (error) {
+        console.error('Error updating date/time settings:', error);
+      }
     }
   };
 
-  const updatePrivacy = (updates: Partial<PrivacySettings>) => {
+  const updatePrivacy = async (updates: Partial<PrivacySettings>) => {
     const newPrivacy = { ...privacySettings, ...updates };
     setPrivacySettings(newPrivacy);
+
     if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEYS.privacySettings, JSON.stringify(newPrivacy));
+      try {
+        await fetch('/api/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            privacy_settings: newPrivacy
+          }),
+        });
+      } catch (error) {
+        console.error('Error updating privacy settings:', error);
+      }
     }
   };
 
-  const updateNotifications = (updates: Partial<NotificationSettings>) => {
+  const updateNotifications = async (updates: Partial<NotificationSettings>) => {
     const newNotifications = { ...notificationSettings, ...updates };
     setNotificationSettings(newNotifications);
+
     if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEYS.notificationSettings, JSON.stringify(newNotifications));
+      try {
+        await fetch('/api/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            notification_settings: newNotifications
+          }),
+        });
+      } catch (error) {
+        console.error('Error updating notification settings:', error);
+      }
     }
   };
 
@@ -284,7 +331,7 @@ export function formatDate(date: Date, settings: DateTimeSettings): string {
 }
 
 export function formatTime(date: Date, settings: DateTimeSettings): string {
-  return settings.timeFormat === '12h' 
+  return settings.timeFormat === '12h'
     ? date.toLocaleTimeString('en-US', { hour12: true })
     : date.toLocaleTimeString('en-GB', { hour12: false });
 }

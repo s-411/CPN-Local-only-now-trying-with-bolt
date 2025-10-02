@@ -448,33 +448,14 @@ export class ShareService {
   }
 
   private loadShareHistory(): void {
-    try {
-      if (typeof window === 'undefined') {
-        this.shareHistory = [];
-        return;
-      }
-      const stored = localStorage.getItem('cpn-share-history');
-      if (stored) {
-        this.shareHistory = JSON.parse(stored).map((entry: any) => ({
-          ...entry,
-          timestamp: new Date(entry.timestamp)
-        }));
-      }
-    } catch (error) {
-      console.warn('Failed to load share history:', error);
-      this.shareHistory = [];
-    }
+    // Share history stored in memory only for current session
+    // No persistent storage needed
+    this.shareHistory = [];
   }
 
   private saveShareHistory(): void {
-    try {
-      if (typeof window === 'undefined') {
-        return;
-      }
-      localStorage.setItem('cpn-share-history', JSON.stringify(this.shareHistory));
-    } catch (error) {
-      console.warn('Failed to save share history:', error);
-    }
+    // Share history stored in memory only for current session
+    // No persistent storage needed
   }
 
   private getTierColor(tier: string): string {

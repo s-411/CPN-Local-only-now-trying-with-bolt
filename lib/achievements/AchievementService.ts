@@ -28,7 +28,7 @@ export class AchievementService {
   /**
    * Check for new achievements based on current user stats
    */
-  checkAchievements(girls: GirlWithMetrics[], entries: DataEntry[], globalStats: GlobalStats): Achievement[] {
+  async checkAchievements(girls: GirlWithMetrics[], entries: DataEntry[], globalStats: GlobalStats): Promise<Achievement[]> {
     const newAchievements: Achievement[] = [];
     const metrics = this.calculateMetrics(girls, entries, globalStats);
 
@@ -38,13 +38,33 @@ export class AchievementService {
     }
 
     if (newAchievements.length > 0) {
+      for (const achievement of newAchievements) {
+        try {
+          await fetch('/api/achievements', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              achievement_type: achievement.type,
+              achievement_id: achievement.id,
+              tier: achievement.tier,
+              title: achievement.title,
+              description: achievement.description,
+              icon: achievement.icon,
+              points: achievement.points
+            }),
+          });
+        } catch (error) {
+          console.error('Failed to save achievement:', error);
+        }
+      }
+
       this.userAchievements.unlocked.push(...newAchievements);
       this.userAchievements.totalPoints = this.userAchievements.unlocked.reduce(
-        (sum, achievement) => sum + achievement.points, 
+        (sum, achievement) => sum + achievement.points,
         0
       );
       this.userAchievements.tier = calculateUserTier(this.userAchievements.totalPoints);
-      this.saveUserAchievements();
+      await this.saveUserAchievements();
     }
 
     return newAchievements;
@@ -364,22 +384,6 @@ export class AchievementService {
   }
 
   private loadUserAchievements(): UserAchievements {
-    try {
-      const stored = localStorage.getItem('cpn-user-achievements');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        return {
-          ...parsed,
-          unlocked: parsed.unlocked.map((a: any) => ({
-            ...a,
-            unlockedAt: new Date(a.unlockedAt)
-          }))
-        };
-      }
-    } catch (error) {
-      console.warn('Failed to load user achievements:', error);
-    }
-
     return {
       unlocked: [],
       progress: {},
@@ -388,11 +392,35 @@ export class AchievementService {
     };
   }
 
-  private saveUserAchievements(): void {
+  async loadFromDatabase(): Promise<void> {
     try {
-      localStorage.setItem('cpn-user-achievements', JSON.stringify(this.userAchievements));
+      const response = await fetch('/api/achievements');
+      if (!response.ok) return;
+
+      const { achievements, totalPoints } = await response.json();
+
+      this.userAchievements.unlocked = achievements.map((a: any) => ({
+        id: a.achievement_id,
+        type: a.achievement_type,
+        category: a.achievement_type.split('_')[0],
+        tier: a.tier,
+        title: a.title,
+        description: a.description,
+        icon: a.icon,
+        requirements: { metric: '', value: 0, operator: 'gte' as const },
+        points: a.points,
+        unlockedAt: new Date(a.unlocked_at)
+      }));
+
+      this.userAchievements.totalPoints = totalPoints;
+      this.userAchievements.tier = calculateUserTier(totalPoints);
     } catch (error) {
-      console.warn('Failed to save user achievements:', error);
+      console.warn('Failed to load achievements from database:', error);
     }
+  }
+
+  private async saveUserAchievements(): Promise<void> {
+    // Achievements are saved individually via API when unlocked
+    // No need for bulk save operation
   }
 }

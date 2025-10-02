@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { PlusIcon, UserGroupIcon, TrophyIcon, LinkIcon, EyeIcon } from '@heroicons/react/24/outline';
-import { leaderboardGroupsStorage, initializeSampleGroups } from '@/lib/leaderboards';
 import { LeaderboardGroup } from '@/lib/types';
 
 export default function LeaderboardsPage() {
@@ -10,19 +9,27 @@ export default function LeaderboardsPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [groupName, setGroupName] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Initialize sample data on first load
-    initializeSampleGroups();
     loadGroups();
   }, []);
 
-  const loadGroups = () => {
-    const userGroups = leaderboardGroupsStorage.getAll();
-    setGroups(userGroups);
+  const loadGroups = async () => {
+    try {
+      const response = await fetch('/api/leaderboards');
+      if (response.ok) {
+        const data = await response.json();
+        setGroups(data);
+      }
+    } catch (error) {
+      console.error('Failed to load groups:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleCreateGroup = () => {
+  const handleCreateGroup = async () => {
     if (!groupName.trim()) {
       setError('Group name is required');
       return;
@@ -34,17 +41,23 @@ export default function LeaderboardsPage() {
     }
 
     try {
-      const newGroup = leaderboardGroupsStorage.create(
-        { name: groupName.trim() },
-        'current-user'
-      );
-      
+      const response = await fetch('/api/leaderboards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: groupName.trim() }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create group');
+      }
+
+      const newGroup = await response.json();
+
       setGroupName('');
       setError('');
       setIsCreating(false);
-      loadGroups();
-      
-      // Redirect to the new group
+      await loadGroups();
+
       window.location.href = `/leaderboards/${newGroup.id}`;
     } catch (error) {
       setError('Failed to create group');

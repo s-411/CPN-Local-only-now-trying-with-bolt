@@ -1,7 +1,7 @@
 import { getSupabaseClient } from '../supabase';
 import { DbUser } from './types';
 
-const SESSION_STORAGE_KEY = 'cpn_session_token';
+const SESSION_COOKIE_NAME = 'cpn_session_token';
 
 function getCookie(name: string): string | null {
   if (typeof document === 'undefined') return null;
@@ -15,12 +15,12 @@ function setCookie(name: string, value: string, days: number = 365) {
   if (typeof document === 'undefined') return;
   const expires = new Date();
   expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax;Secure`;
 }
 
 function removeCookie(name: string) {
   if (typeof document === 'undefined') return;
-  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;SameSite=Lax`;
 }
 
 export async function getOrCreateSession(): Promise<{ userId: string; sessionToken: string }> {
@@ -28,7 +28,7 @@ export async function getOrCreateSession(): Promise<{ userId: string; sessionTok
     throw new Error('Session management only available on client side');
   }
 
-  let sessionToken = getCookie(SESSION_STORAGE_KEY) || localStorage.getItem(SESSION_STORAGE_KEY);
+  let sessionToken = getCookie(SESSION_COOKIE_NAME);
 
   if (!sessionToken) {
     sessionToken = crypto.randomUUID();
@@ -52,8 +52,7 @@ export async function getOrCreateSession(): Promise<{ userId: string; sessionTok
       throw new Error('Failed to create user session');
     }
 
-    setCookie(SESSION_STORAGE_KEY, sessionToken);
-    localStorage.setItem(SESSION_STORAGE_KEY, sessionToken);
+    setCookie(SESSION_COOKIE_NAME, sessionToken);
     return { userId: newUser.id, sessionToken };
   }
 
@@ -65,23 +64,19 @@ export async function getOrCreateSession(): Promise<{ userId: string; sessionTok
     .maybeSingle<DbUser>();
 
   if (error || !existingUser) {
-    removeCookie(SESSION_STORAGE_KEY);
-    localStorage.removeItem(SESSION_STORAGE_KEY);
+    removeCookie(SESSION_COOKIE_NAME);
     return getOrCreateSession();
   }
 
-  // Ensure cookie is set even for existing sessions
-  setCookie(SESSION_STORAGE_KEY, sessionToken);
   return { userId: existingUser.id, sessionToken };
 }
 
 export function getSessionToken(): string | null {
   if (typeof window === 'undefined') return null;
-  return getCookie(SESSION_STORAGE_KEY) || localStorage.getItem(SESSION_STORAGE_KEY);
+  return getCookie(SESSION_COOKIE_NAME);
 }
 
 export function clearSession(): void {
   if (typeof window === 'undefined') return;
-  removeCookie(SESSION_STORAGE_KEY);
-  localStorage.removeItem(SESSION_STORAGE_KEY);
+  removeCookie(SESSION_COOKIE_NAME);
 }

@@ -10,8 +10,7 @@ import {
   ClipboardDocumentIcon
 } from '@heroicons/react/24/outline';
 import { 
-  leaderboardGroupsStorage, 
-  leaderboardMembersStorage, 
+  // Leaderboard operations now use /api/leaderboards endpoints 
   calculateRankings 
 } from '@/lib/leaderboards';
 import { LeaderboardGroup, LeaderboardRanking } from '@/lib/types';
@@ -38,19 +37,35 @@ export default function GroupDashboardPage({ params }: GroupDashboardPageProps) 
     loadGroupData();
   }, [groupId]);
 
-  const loadGroupData = () => {
-    const groupData = leaderboardGroupsStorage.getById(groupId);
-    if (!groupData) {
+  const loadGroupData = async () => {
+    try {
+      const response = await fetch(`/api/leaderboards/${groupId}`);
+      if (!response.ok) {
+        router.push('/leaderboards');
+        return;
+      }
+
+      const members = await response.json();
+      const groupRankings = calculateRankings(members);
+
+      // Placeholder group object
+      setGroup({
+        id: groupId,
+        name: 'Leaderboard Group',
+        createdBy: 'user',
+        inviteToken: '',
+        isPrivate: true,
+        memberCount: members.length,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      setRankings(groupRankings);
+    } catch (error) {
+      console.error('Failed to load group:', error);
       router.push('/leaderboards');
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    const members = leaderboardMembersStorage.getByGroupId(groupId);
-    const groupRankings = calculateRankings(members);
-
-    setGroup(groupData);
-    setRankings(groupRankings);
-    setLoading(false);
   };
 
   const copyInviteLink = async () => {
@@ -66,7 +81,8 @@ export default function GroupDashboardPage({ params }: GroupDashboardPageProps) 
     if (!group) return;
     
     try {
-      leaderboardMembersStorage.addMockMember(group.id);
+      // Mock member addition would go through API
+      console.log('Mock member addition not yet implemented');
       loadGroupData();
     } catch (error) {
       console.error('No more mock users available');

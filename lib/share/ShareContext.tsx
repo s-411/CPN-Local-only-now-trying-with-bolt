@@ -173,23 +173,13 @@ export function ShareProvider({ children }: { children: ReactNode }) {
   }, [state.preferences]);
 
   const loadPreferences = () => {
-    try {
-      const stored = localStorage.getItem('cpn-share-preferences');
-      if (stored) {
-        const prefs = JSON.parse(stored);
-        dispatch({ type: 'UPDATE_PREFERENCES', payload: prefs });
-      }
-    } catch (error) {
-      console.warn('Failed to load share preferences:', error);
-    }
+    // Share preferences managed via settings API
+    // No localStorage needed
   };
 
   const savePreferences = () => {
-    try {
-      localStorage.setItem('cpn-share-preferences', JSON.stringify(state.preferences));
-    } catch (error) {
-      console.warn('Failed to save share preferences:', error);
-    }
+    // Share preferences managed via settings API
+    // No localStorage needed
   };
 
   const refreshHistory = () => {

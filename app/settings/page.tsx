@@ -23,7 +23,7 @@ import {
   UserGroupIcon
 } from '@heroicons/react/24/outline';
 import { useGirls, useDataEntries } from '@/lib/context';
-import { leaderboardGroupsStorage, leaderboardMembersStorage } from '@/lib/leaderboards';
+// Leaderboard operations now use /api/leaderboards endpoints
 import { LeaderboardGroup } from '@/lib/types';
 import Link from 'next/link';
 
@@ -152,11 +152,15 @@ export default function SettingsPage() {
     loadUserGroups();
   }, []);
 
-  const loadUserGroups = () => {
-    // Get all groups - in a real app, this would filter by user membership
-    // For now, we'll show all groups as if the user is a member
-    const allGroups = leaderboardGroupsStorage.getAll();
-    setUserGroups(allGroups);
+  const loadUserGroups = async () => {
+    try {
+      const response = await fetch('/api/leaderboards');
+      const allGroups = response.ok ? await response.json() : [];
+      setUserGroups(allGroups);
+    } catch (error) {
+      console.error('Failed to load groups:', error);
+      setUserGroups([]);
+    }
   };
 
   // Save functions
@@ -210,14 +214,14 @@ export default function SettingsPage() {
     setShowLeaveModal(true);
   };
 
-  const confirmLeaveGroup = () => {
+  const confirmLeaveGroup = async () => {
     if (!groupToLeave) return;
-    
+
     // In a real app, this would remove the user from the group
     // For now, we'll just remove the group entirely for demo purposes
-    leaderboardGroupsStorage.delete(groupToLeave.id);
-    
-    loadUserGroups();
+    await fetch(`/api/leaderboards/${groupToLeave.id}`, { method: 'DELETE' });
+
+    await loadUserGroups();
     setShowLeaveModal(false);
     setGroupToLeave(null);
   };
