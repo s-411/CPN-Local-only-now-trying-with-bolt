@@ -4,6 +4,7 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
+  transpilePackages: ['@supabase/supabase-js'],
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**.digitaloceanspaces.com" },
