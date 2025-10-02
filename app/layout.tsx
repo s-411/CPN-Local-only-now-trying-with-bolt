@@ -5,6 +5,7 @@ import { AppProvider } from '@/lib/context'
 import { ShareProvider } from '@/lib/share/ShareContext'
 import ShareModalWrapper from '@/components/sharing/ShareModalWrapper'
 import LayoutWrapper from '@/components/LayoutWrapper'
+import MigrationPrompt from '@/components/MigrationPrompt'
 
 export const metadata: Metadata = {
   title: 'CPN v2 - Cost Per Nut Calculator',
@@ -30,6 +31,7 @@ export default function RootLayout({
       <body className="bg-cpn-dark text-cpn-white min-h-screen" suppressHydrationWarning>
         <AppProvider>
           <ShareProvider>
+            <MigrationPrompt />
             <LayoutWrapper>
               {children}
             </LayoutWrapper>

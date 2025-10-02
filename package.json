@@ -27,6 +27,7 @@
   "homepage": "https://github.com/s-411/CPN-v2#readme",
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "@supabase/supabase-js": "^2.58.0",
     "next": "^15.5.0",
     "postcss": "^8.4.41",
     "react": "^19.0.0",

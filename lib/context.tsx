@@ -2,9 +2,8 @@
 
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { Girl, DataEntry, GirlWithMetrics, GlobalStats } from './types';
-import { girlsStorage, dataEntriesStorage } from './storage';
 import { createGirlWithMetrics, calculateGlobalStats } from './calculations';
-import { autoMigrateIfNeeded } from './migrations';
+import { getOrCreateSession } from './database/session';
 
 interface AppState {
   girls: Girl[];
@@ -155,16 +154,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // Load initial data on mount
   useEffect(() => {
-    const loadData = () => {
+    const loadData = async () => {
       try {
-        // Run auto-migration for demographic fields before loading data
-        autoMigrateIfNeeded();
-        
-        const girls = girlsStorage.getAll();
-        const dataEntries = dataEntriesStorage.getAll();
+        await getOrCreateSession();
+
+        const [girlsResponse, entriesResponse] = await Promise.all([
+          fetch('/api/girls'),
+          fetch('/api/data-entries')
+        ]);
+
+        if (!girlsResponse.ok || !entriesResponse.ok) {
+          throw new Error('Failed to fetch data');
+        }
+
+        const girls = await girlsResponse.json();
+        const dataEntries = await entriesResponse.json();
+
         dispatch({ type: 'LOAD_DATA', payload: { girls, dataEntries } });
       } catch (error) {
-        console.error('Error loading data from localStorage:', error);
+        console.error('Error loading data from database:', error);
         dispatch({ type: 'SET_LOADING', payload: false });
       }
     };
@@ -191,26 +199,58 @@ export function useAppContext() {
 export function useGirls() {
   const { state, dispatch } = useAppContext();
 
-  const addGirl = (girlData: Omit<Girl, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const newGirl = girlsStorage.create(girlData);
-    dispatch({ type: 'ADD_GIRL', payload: newGirl });
-    return newGirl;
+  const addGirl = async (girlData: Omit<Girl, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      const response = await fetch('/api/girls', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(girlData),
+      });
+
+      if (!response.ok) throw new Error('Failed to create girl');
+
+      const newGirl = await response.json();
+      dispatch({ type: 'ADD_GIRL', payload: newGirl });
+      return newGirl;
+    } catch (error) {
+      console.error('Error adding girl:', error);
+      throw error;
+    }
   };
 
-  const updateGirl = (id: string, updates: Partial<Omit<Girl, 'id' | 'createdAt'>>) => {
-    const updatedGirl = girlsStorage.update(id, updates);
-    if (updatedGirl) {
+  const updateGirl = async (id: string, updates: Partial<Omit<Girl, 'id' | 'createdAt'>>) => {
+    try {
+      const response = await fetch(`/api/girls/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+
+      if (!response.ok) throw new Error('Failed to update girl');
+
+      const updatedGirl = await response.json();
       dispatch({ type: 'UPDATE_GIRL', payload: updatedGirl });
+      return updatedGirl;
+    } catch (error) {
+      console.error('Error updating girl:', error);
+      return null;
     }
-    return updatedGirl;
   };
 
-  const deleteGirl = (id: string) => {
-    const success = girlsStorage.delete(id);
-    if (success) {
+  const deleteGirl = async (id: string) => {
+    try {
+      const response = await fetch(`/api/girls/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error('Failed to delete girl');
+
       dispatch({ type: 'DELETE_GIRL', payload: id });
+      return true;
+    } catch (error) {
+      console.error('Error deleting girl:', error);
+      return false;
     }
-    return success;
   };
 
   const getGirlById = (id: string) => {
@@ -235,26 +275,58 @@ export function useGirls() {
 export function useDataEntries() {
   const { state, dispatch } = useAppContext();
 
-  const addDataEntry = (entryData: Omit<DataEntry, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const newEntry = dataEntriesStorage.create(entryData);
-    dispatch({ type: 'ADD_DATA_ENTRY', payload: newEntry });
-    return newEntry;
+  const addDataEntry = async (entryData: Omit<DataEntry, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      const response = await fetch('/api/data-entries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entryData),
+      });
+
+      if (!response.ok) throw new Error('Failed to create data entry');
+
+      const newEntry = await response.json();
+      dispatch({ type: 'ADD_DATA_ENTRY', payload: newEntry });
+      return newEntry;
+    } catch (error) {
+      console.error('Error adding data entry:', error);
+      throw error;
+    }
   };
 
-  const updateDataEntry = (id: string, updates: Partial<Omit<DataEntry, 'id' | 'createdAt'>>) => {
-    const updatedEntry = dataEntriesStorage.update(id, updates);
-    if (updatedEntry) {
+  const updateDataEntry = async (id: string, updates: Partial<Omit<DataEntry, 'id' | 'createdAt'>>) => {
+    try {
+      const response = await fetch(`/api/data-entries/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+
+      if (!response.ok) throw new Error('Failed to update data entry');
+
+      const updatedEntry = await response.json();
       dispatch({ type: 'UPDATE_DATA_ENTRY', payload: updatedEntry });
+      return updatedEntry;
+    } catch (error) {
+      console.error('Error updating data entry:', error);
+      return null;
     }
-    return updatedEntry;
   };
 
-  const deleteDataEntry = (id: string) => {
-    const success = dataEntriesStorage.delete(id);
-    if (success) {
+  const deleteDataEntry = async (id: string) => {
+    try {
+      const response = await fetch(`/api/data-entries/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error('Failed to delete data entry');
+
       dispatch({ type: 'DELETE_DATA_ENTRY', payload: id });
+      return true;
+    } catch (error) {
+      console.error('Error deleting data entry:', error);
+      return false;
     }
-    return success;
   };
 
   const getEntriesByGirlId = (girlId: string) => {

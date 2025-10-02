@@ -73,7 +73,7 @@ export default function EditGirlModal({ isOpen, onClose, girl }: EditGirlModalPr
     setIsSubmitting(true);
 
     try {
-      updateGirl(girl.id, {
+      await updateGirl(girl.id, {
         name: formData.name.trim(),
         age: parseInt(formData.age),
         nationality: formData.nationality.trim(),
@@ -90,6 +90,7 @@ export default function EditGirlModal({ isOpen, onClose, girl }: EditGirlModalPr
       onClose();
     } catch (error) {
       console.error('Error updating girl:', error);
+      alert('Failed to update profile. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

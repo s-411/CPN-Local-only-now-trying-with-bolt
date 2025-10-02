@@ -80,8 +80,8 @@ export default function EditEntryModal({ isOpen, onClose, entry }: EditEntryModa
 
     try {
       const durationMinutes = (parseInt(formData.hours) || 0) * 60 + (parseInt(formData.minutes) || 0);
-      
-      updateDataEntry(entry.id, {
+
+      await updateDataEntry(entry.id, {
         date: new Date(formData.date),
         amountSpent: parseFloat(formData.amountSpent),
         durationMinutes,

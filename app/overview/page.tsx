@@ -39,16 +39,16 @@ export default function OverviewPage() {
     setDeletingGirl(girl);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (deletingGirl) {
-      deleteGirl(deletingGirl.id);
+      await deleteGirl(deletingGirl.id);
       setDeletingGirl(null);
     }
   };
 
-  const handleMakeInactive = () => {
+  const handleMakeInactive = async () => {
     if (deletingGirl) {
-      updateGirl(deletingGirl.id, { isActive: false });
+      await updateGirl(deletingGirl.id, { isActive: false });
       setDeletingGirl(null);
     }
   };

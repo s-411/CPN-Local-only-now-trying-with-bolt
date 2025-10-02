@@ -92,9 +92,8 @@ export default function AddDataPage({ params }: AddDataPageProps) {
         numberOfNuts: parseInt(formData.numberOfNuts)
       };
 
-      addDataEntry(entryData);
+      await addDataEntry(entryData);
 
-      // Reset form
       setFormData({
         date: new Date().toISOString().split('T')[0],
         amountSpent: '',
@@ -114,11 +113,11 @@ export default function AddDataPage({ params }: AddDataPageProps) {
     setEditingEntry(entry);
   };
 
-  const handleDeleteEntry = (entryId: string) => {
+  const handleDeleteEntry = async (entryId: string) => {
     if (editingEntry?.id === entryId) {
       setEditingEntry(null);
     }
-    deleteDataEntry(entryId);
+    await deleteDataEntry(entryId);
   };
 
   const handleCancelEdit = () => {

@@ -58,12 +58,12 @@ export default function AddGirlModal({ isOpen, onClose }: AddGirlModalProps) {
     setIsSubmitting(true);
 
     try {
-      const newGirl = addGirl({
+      const newGirl = await addGirl({
         name: formData.name.trim(),
         age: parseInt(formData.age),
         nationality: formData.nationality.trim(),
         rating: typeof formData.rating === 'number' ? formData.rating : parseFloat(formData.rating.toString()),
-        isActive: formData.isActive ?? true, // Default to true if undefined
+        isActive: formData.isActive ?? true,
         ethnicity: formData.ethnicity,
         hairColor: formData.hairColor,
         location: formData.location && (formData.location.city || formData.location.country)
@@ -71,7 +71,6 @@ export default function AddGirlModal({ isOpen, onClose }: AddGirlModalProps) {
           : undefined
       });
 
-      // Reset form
       setFormData({
         name: '',
         age: '',
@@ -85,10 +84,10 @@ export default function AddGirlModal({ isOpen, onClose }: AddGirlModalProps) {
       setErrors({});
       onClose();
 
-      // Auto-redirect to Add Data page for the new girl
       router.push(`/girls/${newGirl.id}/add-data`);
     } catch (error) {
       console.error('Error adding girl:', error);
+      alert('Failed to add girl. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
