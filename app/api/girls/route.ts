@@ -6,19 +6,15 @@ export async function GET(request: NextRequest) {
   try {
     const sessionToken = await getSessionTokenFromRequest(request);
     if (!sessionToken) {
-      return NextResponse.json(
-        { error: 'No session token found' },
-        { status: 401 }
-      );
+      // Return empty array instead of 401 - user just doesn't have data yet
+      return NextResponse.json([]);
     }
     const girls = await girlsDatabase.getAll(sessionToken);
     return NextResponse.json(girls);
   } catch (error) {
     console.error('Error in GET /api/girls:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch girls' },
-      { status: 500 }
-    );
+    // Return empty array on error to allow app to load
+    return NextResponse.json([]);
   }
 }
 

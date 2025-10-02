@@ -6,10 +6,8 @@ export async function GET(request: NextRequest) {
   try {
     const sessionToken = await getSessionTokenFromRequest(request);
     if (!sessionToken) {
-      return NextResponse.json(
-        { error: 'No session token found' },
-        { status: 401 }
-      );
+      // Return empty array instead of 401 - user just doesn't have data yet
+      return NextResponse.json([]);
     }
     const { searchParams } = new URL(request.url);
     const girlId = searchParams.get('girlId');
@@ -23,10 +21,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(entries);
   } catch (error) {
     console.error('Error in GET /api/data-entries:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch data entries' },
-      { status: 500 }
-    );
+    // Return empty array on error to allow app to load
+    return NextResponse.json([]);
   }
 }
 

@@ -11,17 +11,26 @@ export function getSupabaseClient(): SupabaseClient {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Missing Supabase environment variables');
+    console.error('Missing Supabase environment variables', {
+      hasUrl: !!supabaseUrl,
+      hasKey: !!supabaseAnonKey
+    });
+    throw new Error('Missing Supabase environment variables. Please check your .env file.');
   }
 
-  supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      persistSession: typeof window !== 'undefined',
-      autoRefreshToken: typeof window !== 'undefined',
-    },
-  });
+  try {
+    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: typeof window !== 'undefined',
+        autoRefreshToken: typeof window !== 'undefined',
+      },
+    });
 
-  return supabaseInstance;
+    return supabaseInstance;
+  } catch (error) {
+    console.error('Failed to create Supabase client:', error);
+    throw new Error('Failed to initialize Supabase client');
+  }
 }
 
 // For convenience - lazy initialization

@@ -150,24 +150,28 @@ const AppContext = createContext<{
 } | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(appReducer, initialState);
+  const [state, dispatch] = useReducer(appReducer, {
+    ...initialState,
+    isLoading: typeof window === 'undefined' ? false : true
+  });
 
-  // Load initial data on mount
+  // Load initial data on mount (client-side only)
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     const loadData = async () => {
       try {
-        // Ensure we're in the browser before initializing session
-        if (typeof window === 'undefined') {
-          dispatch({ type: 'SET_LOADING', payload: false });
-          return;
-        }
-
-        // Initialize session first
+        // Initialize session first (client-side only)
         try {
           await getOrCreateSession();
         } catch (sessionError) {
           console.error('Session initialization error:', sessionError);
-          // If session creation fails, still try to load data (may return empty arrays)
+          // If session creation fails, load with empty data
+          dispatch({ type: 'LOAD_DATA', payload: { girls: [], dataEntries: [] } });
+          return;
         }
 
         const [girlsResponse, entriesResponse] = await Promise.all([
