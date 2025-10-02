@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { girlsDatabase } from '@/lib/database/girls';
-import { cookies } from 'next/headers';
+import { getSessionTokenFromRequest } from '@/lib/api-helpers';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const sessionToken = cookieStore.get('cpn_session_token')?.value;
+    const sessionToken = await getSessionTokenFromRequest(request);
+    if (!sessionToken) {
+      return NextResponse.json(
+        { error: 'No session token found' },
+        { status: 401 }
+      );
+    }
     const girls = await girlsDatabase.getAll(sessionToken);
     return NextResponse.json(girls);
   } catch (error) {

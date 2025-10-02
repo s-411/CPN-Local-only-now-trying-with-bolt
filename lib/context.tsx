@@ -167,7 +167,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           await getOrCreateSession();
         } catch (sessionError) {
           console.error('Session initialization error:', sessionError);
-          // Continue even if session creation fails - API will handle it
+          // If session creation fails, still try to load data (may return empty arrays)
         }
 
         const [girlsResponse, entriesResponse] = await Promise.all([
@@ -175,17 +175,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
           fetch('/api/data-entries')
         ]);
 
+        // If unauthorized, session doesn't exist yet - load with empty data
+        if (girlsResponse.status === 401 || entriesResponse.status === 401) {
+          console.log('No session found, starting with empty data');
+          dispatch({ type: 'LOAD_DATA', payload: { girls: [], dataEntries: [] } });
+          return;
+        }
+
         if (!girlsResponse.ok || !entriesResponse.ok) {
-          throw new Error('Failed to fetch data');
+          console.error('Failed to fetch data:', girlsResponse.status, entriesResponse.status);
+          // Load empty data on error rather than staying in loading state
+          dispatch({ type: 'LOAD_DATA', payload: { girls: [], dataEntries: [] } });
+          return;
         }
 
         const girls = await girlsResponse.json();
         const dataEntries = await entriesResponse.json();
 
+        // Empty arrays are valid - user just has no data yet
         dispatch({ type: 'LOAD_DATA', payload: { girls, dataEntries } });
       } catch (error) {
         console.error('Error loading data from database:', error);
-        dispatch({ type: 'SET_LOADING', payload: false });
+        // Load empty data on error to exit loading state
+        dispatch({ type: 'LOAD_DATA', payload: { girls: [], dataEntries: [] } });
       }
     };
 

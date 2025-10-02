@@ -1,8 +1,7 @@
 import { Girl, DataEntry } from './types';
 import { getOrCreateSession } from './database/session';
+import { GIRLS_STORAGE_KEY, DATA_ENTRIES_STORAGE_KEY } from './storage';
 
-const GIRLS_STORAGE_KEY = 'cpn_girls';
-const DATA_ENTRIES_STORAGE_KEY = 'cpn_data_entries';
 const MIGRATION_FLAG_KEY = 'cpn_migrated_to_db';
 
 export interface MigrationStatus {
