@@ -1,5 +1,3 @@
-'use client';
-
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 let supabaseInstance: SupabaseClient | null = null;
@@ -18,12 +16,15 @@ export function getSupabaseClient(): SupabaseClient {
 
   supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
-      persistSession: true,
-      autoRefreshToken: true,
+      persistSession: typeof window !== 'undefined',
+      autoRefreshToken: typeof window !== 'undefined',
     },
   });
 
   return supabaseInstance;
 }
 
-export const supabase = getSupabaseClient();
+// For convenience - lazy initialization
+export function getSupabase(): SupabaseClient {
+  return getSupabaseClient();
+}

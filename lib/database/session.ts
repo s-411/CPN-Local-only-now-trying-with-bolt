@@ -1,5 +1,3 @@
-'use client';
-
 import { getSupabaseClient } from '../supabase';
 import { DbUser } from './types';
 
